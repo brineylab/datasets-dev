@@ -2,6 +2,7 @@ import os, shutil, subprocess, tempfile, unittest
 from pathlib import Path
 from helpers import ROOT, TINY, git
 import check  # noqa: E402
+ORG = check.hub_org()  # hub.toml's organization: a fork with its own is its own store
 
 class RecordTests(unittest.TestCase):
     """The real scripts/record in a temporary repository holding the tiny fixture as datasets/tiny, committed."""
@@ -24,7 +25,7 @@ class RecordTests(unittest.TestCase):
         r = self.run_script("tiny", "a" * 40, "0", "podman", "laptop", "2026-11-05T00:00:00Z", input=out)
         self.assertEqual((r.returncode, r.stdout.strip()), (0, "results/tiny/1.0.0.txt"), r.stderr)
         path = self.repo / "results/tiny/1.0.0.txt"
-        self.assertEqual(path.read_text(), f"---\ndataset: tiny\nversion: 1.0.0\nhub: brineylab/tiny\nbranch: candidate-{self.tree}\n"
+        self.assertEqual(path.read_text(), f"---\ndataset: tiny\nversion: 1.0.0\nhub: {ORG}/tiny\nbranch: candidate-{self.tree}\n"
                          f"commit: {'a' * 40}\ntree: {self.tree}\ntools: hello@1.0.1\nrunner: podman\nhost: laptop\n"
                          f"started: 2026-11-05T00:00:00Z\nexit: 0\n---\n{out}")
         self.assertEqual(check.parse_record(path)["files"], [("train.txt", 18, "c" * 64)])

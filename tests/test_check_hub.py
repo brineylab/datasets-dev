@@ -3,11 +3,12 @@ from pathlib import Path
 from unittest import mock
 from helpers import FIXTURES, TINY, copy_of
 import check  # noqa: E402
+ORG = check.hub_org()  # hub.toml's organization: a fork with its own is its own store
 
 RESULTS = FIXTURES / "results"
 HUB = FIXTURES / "hub"
 RECORD = check.parse_record(RESULTS / "tiny" / "1.0.0.txt") if hasattr(check, "parse_record") else {"commit": ""}
-API = "https://huggingface.co/api/datasets/brineylab/tiny"
+API = f"https://huggingface.co/api/datasets/{ORG}/tiny"
 
 class HubTests(unittest.TestCase):
     """check.fetch answers from tests/fixtures/hub/, by URL; anything else is absent, as a 404 is."""
@@ -52,7 +53,7 @@ class HubTests(unittest.TestCase):
 
     def test_a_record_whose_commit_is_not_on_the_hub_is_refused(self):
         del self.answers[f"{API}/tree/{RECORD['commit']}?recursive=true"]
-        self.assertIn(f"the record's commit {RECORD['commit']} is not on brineylab/tiny", check.hub_problems(TINY, RESULTS))
+        self.assertIn(f"the record's commit {RECORD['commit']} is not on {ORG}/tiny", check.hub_problems(TINY, RESULTS))
 
     def test_a_record_with_a_nonzero_exit_is_refused(self):
         text = (RESULTS / "tiny" / "1.0.0.txt").read_text().replace("exit: 0", "exit: 1")
