@@ -1,6 +1,7 @@
 import unittest
 from helpers import TINY, copy_of, git
 import check  # noqa: E402
+ORG = check.hub_org()  # hub.toml's organization: a fork with its own is its own store
 
 class CheckTests(unittest.TestCase):
     def test_frontmatter_reads_the_five_fields(self):
@@ -58,7 +59,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(check.scan("nothing here"), [])
 
     def test_hub_toml_names_the_org_and_the_shed(self):
-        self.assertEqual((check.hub_org(), check.toolshed_registry()), ("brineylab", "ghcr.io/brineylab/toolshed"))
+        self.assertRegex(check.hub_org(), r"^[a-z0-9][a-z0-9-]*$"); self.assertEqual(check.toolshed_registry(), "ghcr.io/brineylab/toolshed")
 
 if __name__ == "__main__":
     unittest.main()

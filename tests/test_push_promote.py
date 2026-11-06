@@ -2,6 +2,7 @@ import hashlib, json, os, shutil, subprocess, sys, tempfile, unittest
 from pathlib import Path
 from helpers import ROOT, TINY, git
 import check  # noqa: E402
+ORG = check.hub_org()  # hub.toml's organization: a fork with its own is its own store
 
 STUBS = ROOT / "tests" / "stubs"
 # Each script runs as `python3 -I` does, with the fake huggingface_hub first on sys.path, which -I would not take from PYTHONPATH.
@@ -39,7 +40,7 @@ class PushPromoteTests(unittest.TestCase):
         r = self.run_script("scripts/push", "tiny", self.out)
         self.assertEqual(r.returncode, 0, r.stderr)
         out, s = r.stdout.splitlines(), self.state()
-        self.assertEqual(s["calls"][:4], [["create_repo", "brineylab/tiny"], ["list_repo_refs", "brineylab/tiny"], ["delete_branch", self.branch], ["create_branch", self.branch]])
+        self.assertEqual(s["calls"][:4], [["create_repo", f"{ORG}/tiny"], ["list_repo_refs", f"{ORG}/tiny"], ["delete_branch", self.branch], ["create_branch", self.branch]])
         self.assertEqual(out[:2], [f"file eval.txt 6 {self.sha('eval.txt')}", f"file train.txt 18 {self.sha('train.txt')}"])
         self.assertEqual(out[2], f"commit: {s['branches'][self.branch]}"); self.assertRegex(out[2], r"^commit: [0-9a-f]{40}$"); self.assertEqual(len(out), 3)
         self.assertEqual(s["uploaded"], ["eval.txt", "train.txt"])  # not .work/
@@ -100,7 +101,7 @@ class PushPromoteTests(unittest.TestCase):
     def record(self, commit, merged=True):
         """The record, committed; merged, origin/main holds that commit, as after the pull request's merge."""
         (self.repo / "results/tiny").mkdir(parents=True)
-        (self.repo / "results/tiny/1.0.0.txt").write_text(f"---\ndataset: tiny\nversion: 1.0.0\nhub: brineylab/tiny\nbranch: {self.branch}\n"
+        (self.repo / "results/tiny/1.0.0.txt").write_text(f"---\ndataset: tiny\nversion: 1.0.0\nhub: {ORG}/tiny\nbranch: {self.branch}\n"
                                                          f"commit: {commit}\ntree: {self.tree}\nexit: 0\n---\ncommit: {commit}\n")
         git(self.repo, "add", "results"); git(self.repo, "commit", "-qm", "record")
         if merged:
@@ -134,7 +135,7 @@ class PushPromoteTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         s = self.state()
         self.assertEqual(s["tags"]["v1.0.0"], "c" * 40); self.assertNotIn(self.branch, s["branches"])
-        self.assertEqual(r.stdout.splitlines()[-1], f"promoted: brineylab/tiny v1.0.0 at {'c' * 40}")
+        self.assertEqual(r.stdout.splitlines()[-1], f"promoted: {ORG}/tiny v1.0.0 at {'c' * 40}")
 
     def test_promote_never_moves_an_existing_tag(self):
         self.hub.write_text(json.dumps({"branches": {self.branch: "c" * 40}, "tags": {"v1.0.0": "x" * 40}}))
