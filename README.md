@@ -20,7 +20,7 @@ path = snapshot_download("brineylab/<name>", repo_type="dataset", revision="v<ve
 ## On bcr
 
 ```bash
-export HF_HUB_CACHE=/mnt/data/datasets/hub-cache
+export HF_HUB_CACHE=/mnt/data/datasets/hf_hub
 ```
 
 before the line above, in a notebook or a job, shares the cluster's cache: a version anyone on the cluster has pulled, a flyloft campaign included, is read from disk at once.
