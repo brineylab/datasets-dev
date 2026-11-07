@@ -1,0 +1,26 @@
+---
+dataset: hello2-6a463bf0
+version: 1.0.0
+hub: brineylab-dev/hello2-6a463bf0
+branch: candidate-22a46dde029a3283d7b17a1b29a48d7f01821605
+commit: d13fe0c7e780743b714f780ce5dbbbf7148f2d46
+tree: 22a46dde029a3283d7b17a1b29a48d7f01821605
+tools: datascience@1.0.0
+runner: sbatch --partition=hpc-low --cpus-per-task=4 --mem=8G --time=00:20:00
+host: sunk.6af0ac-us-east-13a-briney-rtx6000pro.coreweave.app
+started: 2026-11-07T00:52:59Z
+exit: 0
+---
+pyxis: importing docker image: ghcr.io#brineylab/toolshed/datascience:1.0.0
+pyxis: imported docker image: ghcr.io#brineylab/toolshed/datascience:1.0.0
+train.parquet 240 rows
+eval.parquet 30 rows
+test.parquet 30 rows
+train.parquet 240 rows
+eval.parquet 30 rows
+test.parquet 30 rows
+ok
+file eval.parquet 6602 fc311054c3da6268f2dcb7cb9a751697a5542f6fdd0ea5befe7bb7a6a39a234d
+file test.parquet 6505 98c0a809593d563ea422663e21185e8b08631be9b7a593a3eda2d0034a0b5234
+file train.parquet 35145 5382f5f36ce977c410e4401ef5dc4c8755e8aa66d5cee8b4e217809473da5b72
+commit: d13fe0c7e780743b714f780ce5dbbbf7148f2d46
