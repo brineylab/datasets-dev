@@ -1,0 +1,23 @@
+#!/usr/bin/env -S python3 -I
+"""recipe/build <out>: `pairs` synthetic antibody pairs from params.toml's seed, shuffled and split by
+`split` into train, eval, and test parquet files in <out>."""
+import random
+import sys
+import tomllib
+from pathlib import Path
+
+import polars as pl
+
+AA = "ACDEFGHIKLMNPQRSTVWY"
+params = tomllib.loads((Path(__file__).parent / "params.toml").read_text())
+out = Path(sys.argv[1])
+out.mkdir(parents=True, exist_ok=True)
+rng = random.Random(params["seed"])
+chain = lambda lo, hi: "".join(rng.choice(AA) for _ in range(rng.randint(lo, hi)))
+rows = [(f"hello-{i:04d}", chain(110, 130), chain(105, 115)) for i in range(params["pairs"])]
+rng.shuffle(rows)
+n_train, n_eval = (round(f * len(rows)) for f in params["split"][:2])
+splits = {"train": rows[:n_train], "eval": rows[n_train:n_train + n_eval], "test": rows[n_train + n_eval:]}
+for split, part in splits.items():
+    pl.DataFrame(part, schema=["pair_id", "sequence_heavy", "sequence_light"], orient="row").write_parquet(out / f"{split}.parquet")
+    print(f"{split}.parquet {len(part)} rows")

@@ -1,0 +1,26 @@
+#!/usr/bin/env -S python3 -I
+"""recipe/test <out>: exit 0 iff <out> holds hello's three splits, with its columns and row counts and no
+pair_id in two splits."""
+import sys
+from pathlib import Path
+
+import polars as pl
+
+out, seen, problems = Path(sys.argv[1]), {}, []
+for split, rows in (("train", 240), ("eval", 30), ("test", 30)):
+    path = out / f"{split}.parquet"
+    if not path.is_file():
+        problems.append(f"{split}.parquet is missing")
+        continue
+    df = pl.read_parquet(path)
+    if df.columns != ["pair_id", "sequence_heavy", "sequence_light"]:
+        problems.append(f"{split}.parquet has columns {df.columns}")
+    if df.height != rows:
+        problems.append(f"{split}.parquet has {df.height} rows, not {rows}")
+    for pid in df["pair_id"]:
+        if pid in seen:
+            problems.append(f"{pid} is in {seen[pid]} and {split}")
+        seen[pid] = split
+    print(f"{split}.parquet {df.height} rows")
+print("\n".join(problems) or "ok")
+sys.exit(1 if problems else 0)
